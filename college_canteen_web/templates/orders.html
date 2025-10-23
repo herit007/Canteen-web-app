@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Orders</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      text-align: center;
+    }
+    .links {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .links a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍽 College Canteen Portal</h1>
+    <p class="subtitle">Here are your current and past orders!</p>
+
+    <div class="card">
+      <h2>Your Orders</h2>
+
+      <table>
+        <tr>
+          <th>Order ID</th>
+          <!-- *** FIX: Updated to order_items_list to match app.py logic *** -->
+          <th>Items (Name x Qty)</th> 
+          <th>Total (₹)</th>
+          <th>Time</th>
+        </tr>
+        {% for o in orders %}
+        <tr>
+          <td>#{{ o.order_id }}</td>
+          <td>{{ o.order_items_list }}</td>
+          <td>₹{{ "%.2f"|format(o.total) }}</td>
+          <td>{{ o.order_time.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" style="text-align: center;">You have no orders yet!</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div class="links">
+        <a href="{{ url_for('menu') }}">Back to Menu</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

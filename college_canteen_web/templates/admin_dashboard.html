@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Adding a modern icon library for visual appeal -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Grid for Full-Screen Dashboard Layout */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Prevent body scroll, let content scroll */
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+
+        /* 1. MAIN LAYOUT GRID */
+        #dashboard-layout {
+            display: grid;
+            /* Define 2 columns: 250px for sidebar, 1fr for main content */
+            grid-template-columns: 250px 1fr;
+            /* Define 2 rows: 80px for header, 1fr for remaining height */
+            grid-template-rows: 80px 1fr;
+            height: 100vh;
+        }
+
+        /* 2. TOP HEADER (Full Width) */
+        #top-header {
+            grid-column: 1 / 3; /* Spans both columns */
+            background-color: #36c6e7; /* Primary Indigo */
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        #top-header h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* 3. LEFT SIDEBAR */
+        #sidebar {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            background-color: #ffffff; /* White sidebar */
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Push logout to bottom */
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar-nav a i {
+            width: 30px;
+            font-size: 1.1em;
+            color: #1a237e;
+        }
+        .sidebar-nav a:hover, .sidebar-nav .active {
+            background-color: #e8eaf6; /* Light indigo background */
+            color: #1a237e;
+            border-right: 4px solid #1a237e;
+        }
+        .sidebar-nav a:hover i {
+            color: #1a237e;
+        }
+
+        /* Logout Positioned at the Bottom Left */
+        .logout-section {
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .logout-section a {
+            display: block;
+            background-color: #ff5722; /* Orange/Red for logout */
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .logout-section a:hover {
+            background-color: #e64a19;
+        }
+
+
+        /* 4. MAIN CONTENT AREA */
+        #main-content {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            padding: 30px;
+            overflow-y: auto; /* Allows scrolling only in the main content area */
+        }
+        .content-container {
+            max-width: 100%;
+        }
+
+        /* --- STATS GRID (KPIs) --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px; 
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
+            border-left: 5px solid; /* Accent */
+        }
+        .stat-card.orders { border-color: #4CAF50; }
+        .stat-card.items { border-color: #2196F3; }
+        .stat-card.students { border-color: #FF9800; }
+        
+        .stat-card h4 { 
+            margin-bottom: 8px; 
+            color: #888; 
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        .stat-card p { 
+            font-size: 2.2em; 
+            font-weight: 700; 
+            margin: 0;
+            color: #333;
+        }
+
+        /* --- DATA GRID (Chart and Menu) --- */
+        .dashboard-data {
+            display: grid;
+            grid-template-columns: 3fr 2fr; /* 60/40 Split for Chart/Menu */
+            gap: 30px;
+        }
+        
+        /* General Card Styling */
+        .card-panel {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
+        }
+
+        /* Chart Styling */
+        .chart-card h2 { margin-bottom: 20px; color: #1a237e; font-size: 1.5em; }
+        .chart-card img {
+            width: 100%;
+            height: auto;
+            max-height: 450px; 
+            object-fit: contain;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+        }
+        
+        /* Menu Management Specific Styles */
+        .add-form-container {
+            background-color: #f0f3ff; 
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #d1d9ff;
+        }
+        .add-form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .add-form-container input {
+            border: 1px solid #dcdfe6;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .add-form-container button {
+            background-color: #4CAF50; /* Green */
+            padding: 10px;
+            font-size: 1em;
+            margin-top: 0;
+            width: 100%;
+        }
+        
+        .table-wrapper {
+            max-height: 300px; 
+            overflow-y: auto;
+        }
+        .menu-management table {
+             width: 100%;
+             border-collapse: collapse;
+        }
+        .menu-management th, .menu-management td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .menu-management th {
+            position: sticky;
+            top: -30px; /* Adjust based on card padding */
+            background-color: #ffffff; 
+            color: #1a237e;
+            z-index: 10;
+        }
+        .menu-management table a { 
+            color: #ff5722; 
+            font-weight: 500;
+        } 
+        
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 900px) {
+            #dashboard-layout {
+                grid-template-columns: 1fr; /* Stack everything */
+                grid-template-rows: 60px 1fr; /* Smaller header on mobile, no separate sidebar column */
+            }
+            #top-header {
+                grid-column: 1 / 2;
+                font-size: 1em;
+            }
+            #sidebar {
+                grid-row: 2 / 3;
+                width: 100%;
+                /* You would typically hide the sidebar and use a hamburger menu on mobile, 
+                   but for simplicity, we'll keep it collapsed but visible at the top of content */
+                position: relative; 
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+                padding: 10px 0;
+            }
+            #main-content {
+                grid-column: 1 / 2;
+                padding: 15px;
+            }
+            .sidebar-nav {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            .sidebar-nav a {
+                padding: 8px 15px;
+                border-right: none;
+            }
+            .logout-section {
+                display: none; /* Hide logout from sidebar on mobile, use top menu if complex */
+            }
+            .dashboard-data {
+                grid-template-columns: 1fr; /* Stack chart and menu */
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="dashboard-layout">
+        
+        <!-- TOP HEADER -->
+        <header id="top-header">
+            <h1>College Canteen Management System</h1>
+        </header>
+
+        <!-- LEFT SIDEBAR -->
+        <aside id="sidebar">
+            <nav class="sidebar-nav">
+                <!-- Navigation Links -->
+                <a href="#" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="#"><i class="fas fa-home"></i> Home</a>
+                <a href="#"><i class="fas fa-users"></i> Students</a>
+                <a href="#"><i class="fas fa-store"></i> Menu Items</a>
+                <a href="#"><i class="fas fa-cogs"></i> Settings</a>
+            </nav>
+            
+            <!-- LOGOUT AT BOTTOM LEFT CORNER -->
+            <div class="logout-section">
+                <a href="{{ url_for('admin_logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main id="main-content">
+            <div class="content-container">
+                
+                <!-- 1. STATS GRID -->
+                <h2 style="margin-bottom: 20px; color: #1a237e; font-size: 1.5em; font-weight: 600;">System Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card orders">
+                        <h4>Total Orders Placed</h4>
+                        <p>{{ total_orders }}</p>
+                    </div>
+                    <div class="stat-card items">
+                        <h4>Total Menu Items</h4>
+                        <p>{{ total_menu_items }}</p>
+                    </div>
+                    <div class="stat-card students">
+                        <h4>Total Students Registered</h4>
+                        <p>{{ total_students }}</p>
+                    </div>
+                   <div class="stat-card" style="border-left-color: #9C27B0;">
+                        <h4>Revenue (LTM)</h4>
+                        <p>₹{{ "%.2f"|format(total_revenue) }}</p>
+                    </div>
+                </div>
+
+                <!-- 2. DATA GRID (CHART & MENU) -->
+                <div class="dashboard-data">
+                    
+                    <!-- LEFT: CHART -->
+                    <div class="card-panel chart-card">
+                        <h2>📈 Revenue and Sales Overview</h2>
+                        {% if chart_file %}
+                            <img src="{{ url_for('static', filename=chart_file) }}?v={{ total_orders }}" alt="Revenue Chart">
+                        {% else %}
+                            <p class="error" style="text-align: center; color: #999; padding: 100px;">No orders placed yet to generate a chart.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- RIGHT: MENU MANAGEMENT -->
+                    <div class="card-panel menu-management">
+                        <h2>🍽 Menu Management</h2>
+                        
+                        <!-- ADD NEW ITEM FORM -->
+                        <div class="add-form-container">
+                            <h4 style="margin-top: 0; color: #1a237e;">Add New Item</h4>
+                            <form action="{{ url_for('admin_add_item') }}" method="POST">
+                                <input type="text" name="name" placeholder="Item Name" required>
+                                <input type="number" name="price" placeholder="Price (e.g., 50.00)" step="0.01" min="0.01" required>
+                                <button type="submit">➕ Add Item</button>
+                            </form>
+                        </div>
+
+                        <!-- MENU TABLE CONTAINER (SCROLLABLE) -->
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Item</th>
+                                        <th>Price (₹)</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in menu_items %}
+                                    <tr>
+                                        <td>{{ item.item_id }}</td>
+                                        <td>{{ item.item_name }}</td>
+                                        <td>₹{{ "%.2f"|format(item.price) }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin_remove_item', item_id=item.item_id) }}" 
+                                               onclick="return confirm('Are you sure you want to remove {{ item.item_name }}?');">Remove</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>

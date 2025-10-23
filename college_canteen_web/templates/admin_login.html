@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 0;
+    }
+    .container {
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+    }
+    .card {
+        padding: 30px;
+    }
+    .error-message {
+        color: #dc3545;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 Canteen Admin Access</h1>
+    <p class="subtitle">Use the Admin credentials to manage the canteen system.</p>
+
+    <div class="card">
+      <h2>Admin Login</h2>
+      {% if error %}
+        <p class="error-message">{{ error }}</p>
+      {% endif %}
+      <form action="{{ url_for('admin_login') }}" method="POST">
+        <input type="email" name="email" placeholder="Admin Email" required value="admin@canteen.com">
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Log In</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

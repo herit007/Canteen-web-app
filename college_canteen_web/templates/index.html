@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Canteen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>🍽 College Canteen Portal</h1>
+    <p class="subtitle">Order delicious food with just a few clicks!</p>
+
+    <div class="forms">
+      <div class="card">
+        <h2>Login</h2>
+        <form action="/login" method="POST">
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Register</h2>
+        <form action="/register" method="POST">
+          <input type="text" name="name" placeholder="Full Name" required>
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit" class="secondary">Register</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
