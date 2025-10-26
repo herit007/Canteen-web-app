@@ -1,87 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Orders</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 20px;
-    }
-    .card {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-    }
-    h1, h2, h3 {
-      text-align: center;
-    }
-    .links {
-      margin-top: 15px;
-      text-align: center;
-    }
-    .links a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: #007BFF;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Orders History</title>
+    <!-- Load Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* --- Root Colors (Deep Blue/Teal Theme) --- */
+        :root {
+            --primary-color: #3498db; /* Bright Blue */
+            --primary-dark: #2980b9;  /* Deep Blue */
+            --sidebar-bg: #2c3e50;    /* Deep Navy for Sidebar/Header */
+            --success-color: #28a745; /* Standard Green */
+            --text-dark: #333;
+            --background-light: #ecf0f1; /* Light Gray/Blueish */
+            --background-card: #ffffff;
+            --danger-color: #e74c3c;
+            --border-color: #ddd;
+        }
+
+        /* --- Layout & Background (Full Viewport) --- */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: var(--background-light);
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0; 
+            overflow-x: hidden; 
+        }
+        
+        /* --- Full Width Header Bar (Fixed at top) --- */
+        .app-header {
+            width: 100%;
+            height: 70px;
+            background: var(--sidebar-bg); /* Dark bar */
+            color: white;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: fixed; 
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .app-header h1 {
+            font-size: 1.6em;
+            font-weight: 800;
+            color: white;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .welcome-message {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #ecf0f1;
+        }
+
+        /* --- Sidebar Navigation (Fixed Left) --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding-top: 90px; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-brand {
+            padding: 15px; 
+            text-align: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+        .sidebar-brand span {
+            font-size: 1.2em; 
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .sidebar-item {
+            display: block;
+            padding: 15px 30px;
+            text-decoration: none;
+            color: #ecf0f1;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .sidebar-item i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            border-left: 5px solid white;
+        }
+        .sidebar-item.active:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            margin-left: 250px; 
+            padding-top: 90px; 
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            width: calc(100% - 250px);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px; 
+            padding: 0 20px 40px; 
+            flex-direction: column;
+        }
+
+        /* --- Card Styling Update --- */
+        .card {
+            background-color: var(--background-card);
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            width: 100%; 
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        .subtitle {
+            font-size: 1.1em;
+            color: #777;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+
+        /* --- Table Styling --- */
+        .table-wrapper {
+            overflow-x: auto; /* Ensures table is responsive */
+        }
+        table {
+            width: 100%;
+            border-collapse: separate; /* Use separate for rounded corners */
+            border-spacing: 0;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden; /* Important for rounding corners */
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: none;
+            border-bottom: 1px solid #f0f0f0; /* Use light border between rows */
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        tr:last-child td {
+            border-bottom: none; 
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9; 
+        }
+        tr:hover {
+            background-color: #f0f8ff; /* Light hover effect */
+        }
+        
+        .order-id {
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        .total-price {
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        /* --- Footer Links --- */
+        .links {
+            margin-top: 30px;
+            text-align: center;
+        }
+        /* Style for the footer navigation links */
+        .links a {
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+            border: 1px solid var(--primary-color);
+            /* Added margin for separation */
+            margin: 0 5px;
+        }
+        .links a:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Responsive adjustment for small screens */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-250px); 
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .app-header {
+                padding: 0 20px;
+            }
+            .welcome-message {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🍽 College Canteen Portal</h1>
-    <p class="subtitle">Here are your current and past orders!</p>
+    
+    <!-- FULL WIDTH & FIXED HEADER -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1><i class="fas fa-history" style="margin-right: 10px;"></i> Order History</h1>
+        </div>
+    </header>
 
-    <div class="card">
-      <h2>Your Orders</h2>
+    <!-- FIXED SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span>Navigation</span>
+        </div>
+        
+        <!-- Links use Jinja url_for() for correct server-side routing -->
+        <a href="{{ url_for('menu') }}" class="sidebar-item">
+            <i class="fas fa-utensils"></i> View Menu
+        </a>
+        <a href="{{ url_for('orders') }}" class="sidebar-item active">
+            <i class="fas fa-list-alt"></i> My Orders
+        </a>
+        <a href="{{ url_for('logout') }}" class="sidebar-item">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </aside>
 
-      <table>
-        <tr>
-          <th>Order ID</th>
-          <!-- *** FIX: Updated to order_items_list to match app.py logic *** -->
-          <th>Items (Name x Qty)</th> 
-          <th>Total (₹)</th>
-          <th>Time</th>
-        </tr>
-        {% for o in orders %}
-        <tr>
-          <td>#{{ o.order_id }}</td>
-          <td>{{ o.order_items_list }}</td>
-          <td>₹{{ "%.2f"|format(o.total) }}</td>
-          <td>{{ o.order_time.strftime('%Y-%m-%d %H:%M') }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="4" style="text-align: center;">You have no orders yet!</td>
-        </tr>
-        {% endfor %}
-      </table>
+    <!-- MAIN CONTENT AREA (OFFSET FROM SIDEBAR) -->
+    <div class="main-content">
+        <div class="container">
+            
+            <div class="card">
+                <h2>Your Order History</h2>
+                <p class="subtitle">Review your current and past transactions with the College Canteen.</p>
 
-      <div class="links">
-        <a href="{{ url_for('menu') }}">Back to Menu</a> |
-        <a href="{{ url_for('logout') }}">Logout</a>
-      </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Items (Name x Qty)</th> 
+                                <th>Total (₹)</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <!-- Table Body now populated by Jinja loop from the server -->
+                        <tbody id="ordersTableBody">
+                            {% for o in orders %}
+                            <tr>
+                                <td class="order-id">#{{ o.order_id }}</td>
+                                <td>{{ o.order_items_list }}</td>
+                                <td class="total-price">₹{{ "%.2f"|format(o.total) }}</td>
+                                <!-- Assuming 'order_time' is a Python datetime object or a formatted string -->
+                                <td>{{ o.order_time.strftime('%Y-%m-%d %H:%M') if o.order_time.strftime else o.order_time }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #777; font-style: italic; padding: 20px;">
+                                    You have no orders yet! Place your first order from the Menu.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="links">
+                    <a href="{{ url_for('menu') }}">Back to Menu</a> |
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+    
+    <script>
+        // Set student name in the header, now using Jinja variable from the display span
+        const studentNameElement = document.getElementById('studentNameDisplay');
+        const studentName = studentNameElement.textContent.trim();
+        // Fallback for display if Jinja variable is empty (only visible if 'student' is passed)
+        if (!studentName) {
+            studentNameElement.textContent = 'Guest'; 
+        }
+
+    </script>
 </body>
 </html>
