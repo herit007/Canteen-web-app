@@ -59,3 +59,4 @@ INSERT INTO menu (item_name, price) VALUES
 ('Noodles', 60.00),
 ('Pizza Slice', 75.00),
 ('Fresh Juice', 40.00);
+
